@@ -32,5 +32,8 @@ env/
 .DS_Store
 Thumbs.db
 
-# Temp files written by the runner
-snyk_jira_cfg_*.json
+# Runtime data (configs, schedules, run history)
+data/
+
+# Output files written by the snyk-jira-sync binary
+listOfTicketCreated_*.json

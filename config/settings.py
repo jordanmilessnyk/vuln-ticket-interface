@@ -58,3 +58,4 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 SNYK_TOKEN = os.environ.get("SNYK_TOKEN", "")
+SNYK_JIRA_BINARY = os.environ.get("SNYK_JIRA_BINARY", "snyk-jira-sync")

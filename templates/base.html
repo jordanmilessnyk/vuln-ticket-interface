@@ -51,11 +51,13 @@
     .sidebar-brand .logo-row {
       display: flex; align-items: center; gap: 10px;
     }
-    .sidebar-brand .snyk-dot {
-      width: 28px; height: 28px; border-radius: 6px;
-      background: var(--snyk-green);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 16px; color: #fff;
+    .sidebar-brand .snyk-wordmark {
+      font-size: 24px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.5px;
+      line-height: 1;
+      margin-bottom: 4px;
     }
     .sidebar-brand h1 {
       font-size: 14px; font-weight: 700; line-height: 1.2;
@@ -261,13 +263,8 @@
 
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <div class="logo-row">
-      <div class="snyk-dot">S</div>
-      <div>
-        <h1>Snyk Jira</h1>
-        <p>Vuln Ticket Interface</p>
-      </div>
-    </div>
+    <div class="snyk-wordmark">snyk</div>
+    <p>Vuln Ticket Interface</p>
   </div>
   <nav>
     <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">

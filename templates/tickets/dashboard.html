@@ -14,6 +14,11 @@
   ⚠ <strong>SNYK_TOKEN is not set.</strong> Copy <code>.env.example</code> to <code>.env</code> and add your token before running.
 </div>
 {% endif %}
+{% if not binary_found %}
+<div class="alert alert-warning">
+  ⚠ <strong>Binary not found:</strong> <code>{{ binary_path }}</code> — Download the <code>snyk-jira-sync</code> binary for your platform from <strong>github.com/snyk-tech-services/jira-tickets-for-new-vulns/releases</strong>, then set <code>SNYK_JIRA_BINARY=/path/to/binary</code> in your <code>.env</code> file.
+</div>
+{% endif %}
 
 <div class="stat-grid">
   <div class="stat-card">
