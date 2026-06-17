@@ -22,8 +22,8 @@
     <tbody>
       {% for run in runs %}
       <tr>
-        <td class="text-muted text-small">{{ run.pk }}</td>
-        <td>{{ run.configuration.name|default:"(deleted)" }}</td>
+        <td class="text-muted text-small">{{ run.id|slice:":8" }}</td>
+        <td>{{ run.config_name|default:"(deleted)" }}</td>
         <td>
           {% if run.triggered_by == "schedule" %}
             <span class="badge badge-info">⏱ schedule</span>
@@ -42,7 +42,7 @@
           {% if run.duration_seconds %}{{ run.duration_seconds|floatformat:1 }}s{% else %}—{% endif %}
         </td>
         <td class="text-small text-muted">{{ run.started_at|date:"M j, Y H:i" }}</td>
-        <td><a href="{% url 'run_detail' run.pk %}" class="btn btn-secondary btn-sm">View</a></td>
+        <td><a href="{% url 'run_detail' run.id %}" class="btn btn-secondary btn-sm">View</a></td>
       </tr>
       {% endfor %}
     </tbody>

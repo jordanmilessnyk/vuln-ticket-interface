@@ -24,7 +24,7 @@
     <tbody>
       {% for s in schedules %}
       <tr>
-        <td><strong>{{ s.configuration.name }}</strong></td>
+        <td><strong>{{ s.config_name }}</strong></td>
         <td><code>{{ s.cron_expression }}</code></td>
         <td class="text-muted text-small">{{ s.configuration.description|default:"—" }}</td>
         <td>
@@ -37,14 +37,14 @@
         <td class="text-small text-muted">{{ s.created_at|date:"M j, Y" }}</td>
         <td>
           <div class="flex gap-8">
-            <form method="post" action="{% url 'schedule_toggle' s.pk %}">
+            <form method="post" action="{% url 'schedule_toggle' s.id %}">
               {% csrf_token %}
               <button class="btn btn-secondary btn-sm">
                 {% if s.enabled %}Disable{% else %}Enable{% endif %}
               </button>
             </form>
-            <a href="{% url 'schedule_edit' s.pk %}" class="btn btn-secondary btn-sm">Edit</a>
-            <form method="post" action="{% url 'schedule_delete' s.pk %}" onsubmit="return confirm('Delete this schedule?')">
+            <a href="{% url 'schedule_edit' s.id %}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{% url 'schedule_delete' s.id %}" onsubmit="return confirm('Delete this schedule?')">
               {% csrf_token %}
               <button class="btn btn-danger btn-sm">Delete</button>
             </form>

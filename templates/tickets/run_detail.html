@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Run #{{ run.pk }} — Snyk Jira Tickets{% endblock %}
-{% block page_title %}Run #{{ run.pk }}{% endblock %}
+{% block title %}Run {{ run.id|slice:":8" }} — Snyk Jira Tickets{% endblock %}
+{% block page_title %}Run {{ run.id|slice:":8" }}{% endblock %}
 
 {% block topbar_actions %}
   <a href="{% url 'run_list' %}" class="btn btn-secondary">← Run History</a>
@@ -22,7 +22,7 @@
   <div class="stat-card">
     <div class="label">Configuration</div>
     <div style="margin-top:6px; font-weight:600; font-size:13px;">
-      {{ run.configuration.name|default:"(deleted)" }}
+      {{ run.config_name|default:"(deleted)" }}
     </div>
   </div>
   <div class="stat-card">
@@ -74,7 +74,7 @@ Dry Run:           {{ run.configuration.dry_run }}</pre>
 {% if run.status == "running" or run.status == "pending" %}
 <script>
 (function() {
-  var pollUrl = "{% url 'run_status_api' run.pk %}";
+  var pollUrl = "{% url 'run_status_api' run.id %}";
   var intervalId = setInterval(function() {
     fetch(pollUrl)
       .then(function(r) { return r.json(); })

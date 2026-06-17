@@ -42,12 +42,12 @@
         <td class="text-small text-muted">{{ c.updated_at|date:"M j, Y" }}</td>
         <td>
           <div class="flex gap-8">
-            <form method="post" action="{% url 'run_now' c.pk %}">
+            <form method="post" action="{% url 'run_now' c.id %}">
               {% csrf_token %}
               <button class="btn btn-success btn-sm">▶ Run</button>
             </form>
-            <a href="{% url 'config_edit' c.pk %}" class="btn btn-secondary btn-sm">Edit</a>
-            <form method="post" action="{% url 'config_delete' c.pk %}" onsubmit="return confirm('Delete \'{{ c.name }}\'?')">
+            <a href="{% url 'config_edit' c.id %}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{% url 'config_delete' c.id %}" onsubmit="return confirm('Delete \'{{ c.name }}\'?')">
               {% csrf_token %}
               <button class="btn btn-danger btn-sm">Delete</button>
             </form>

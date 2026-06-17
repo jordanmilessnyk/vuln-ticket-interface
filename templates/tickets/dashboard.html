@@ -57,11 +57,11 @@
         <td>{% if c.dry_run %}<span class="badge badge-warning">dry run</span>{% else %}—{% endif %}</td>
         <td>
           <div class="flex gap-8">
-            <form method="post" action="{% url 'run_now' c.pk %}" style="display:inline">
+            <form method="post" action="{% url 'run_now' c.id %}" style="display:inline">
               {% csrf_token %}
               <button class="btn btn-success btn-sm" {% if not snyk_token_set %}disabled title="Set SNYK_TOKEN first"{% endif %}>▶ Run</button>
             </form>
-            <a href="{% url 'config_edit' c.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            <a href="{% url 'config_edit' c.id %}" class="btn btn-secondary btn-sm">Edit</a>
           </div>
         </td>
       </tr>
@@ -96,8 +96,8 @@
     <tbody>
       {% for run in recent_runs %}
       <tr>
-        <td class="text-muted text-small">{{ run.pk }}</td>
-        <td>{{ run.configuration.name|default:"—" }}</td>
+        <td class="text-muted text-small">{{ run.id|slice:":8" }}</td>
+        <td>{{ run.config_name|default:"—" }}</td>
         <td>{{ run.triggered_by }}</td>
         <td>
           {% if run.status == "success" %}<span class="badge badge-success">✓ success</span>
@@ -106,7 +106,7 @@
           {% else %}<span class="badge badge-neutral">{{ run.status }}</span>{% endif %}
         </td>
         <td class="text-small text-muted">{{ run.started_at|date:"M j, H:i" }}</td>
-        <td><a href="{% url 'run_detail' run.pk %}" class="btn btn-secondary btn-sm">View</a></td>
+        <td><a href="{% url 'run_detail' run.id %}" class="btn btn-secondary btn-sm">View</a></td>
       </tr>
       {% endfor %}
     </tbody>
