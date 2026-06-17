@@ -1,3 +1,4 @@
+import os
 import threading
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -35,11 +36,15 @@ def _get_run_or_404(run_id):
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
 def dashboard(request):
+    import shutil
+    binary = getattr(settings, "SNYK_JIRA_BINARY", "snyk-jira-sync")
     return render(request, "tickets/dashboard.html", {
         "configs": store.list_configs(),
         "recent_runs": store.list_runs(limit=10),
         "schedules": store.list_schedules(),
         "snyk_token_set": bool(settings.SNYK_TOKEN),
+        "binary_found": bool(shutil.which(binary) or os.path.isfile(binary)),
+        "binary_path": binary,
     })
 
 
