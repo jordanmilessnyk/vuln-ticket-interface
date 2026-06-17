@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Configurations — Snyk Jira Tickets{% endblock %}
+{% block page_title %}Configurations{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'config_create' %}" class="btn btn-primary">+ New Configuration</a>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-0">
+  {% if configs %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Org ID</th>
+        <th>Jira Project</th>
+        <th>Severity</th>
+        <th>Type</th>
+        <th>Flags</th>
+        <th>Updated</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in configs %}
+      <tr>
+        <td>
+          <strong>{{ c.name }}</strong>
+          {% if c.description %}<br><span class="text-muted text-small">{{ c.description }}</span>{% endif %}
+        </td>
+        <td class="text-small text-muted">{{ c.org_id|truncatechars:24 }}</td>
+        <td>{{ c.jira_project_key }}</td>
+        <td><span class="badge badge-neutral">{{ c.severity }}</span></td>
+        <td><span class="badge badge-neutral">{{ c.issue_type }}</span></td>
+        <td>
+          {% if c.dry_run %}<span class="badge badge-warning">dry run</span> {% endif %}
+          {% if c.debug %}<span class="badge badge-info">debug</span> {% endif %}
+          {% if c.if_upgrade_available_only %}<span class="badge badge-neutral">upgradable</span>{% endif %}
+        </td>
+        <td class="text-small text-muted">{{ c.updated_at|date:"M j, Y" }}</td>
+        <td>
+          <div class="flex gap-8">
+            <form method="post" action="{% url 'run_now' c.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-success btn-sm">▶ Run</button>
+            </form>
+            <a href="{% url 'config_edit' c.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{% url 'config_delete' c.pk %}" onsubmit="return confirm('Delete \'{{ c.name }}\'?')">
+              {% csrf_token %}
+              <button class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">⚙</div>
+    <p>No configurations yet. <a href="{% url 'config_create' %}">Create one</a> to get started.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Run #{{ run.pk }} — Snyk Jira Tickets{% endblock %}
+{% block page_title %}Run #{{ run.pk }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'run_list' %}" class="btn btn-secondary">← Run History</a>
+{% endblock %}
+
+{% block content %}
+
+<div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:14px; margin-bottom:20px;">
+  <div class="stat-card">
+    <div class="label">Status</div>
+    <div style="margin-top:8px;" id="status-badge">
+      {% if run.status == "success" %}<span class="badge badge-success">✓ success</span>
+      {% elif run.status == "failed" %}<span class="badge badge-danger">✗ failed</span>
+      {% elif run.status == "running" %}<span class="badge badge-running">● running…</span>
+      {% else %}<span class="badge badge-neutral">{{ run.status }}</span>{% endif %}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Configuration</div>
+    <div style="margin-top:6px; font-weight:600; font-size:13px;">
+      {{ run.configuration.name|default:"(deleted)" }}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Triggered by</div>
+    <div style="margin-top:8px;">
+      {% if run.triggered_by == "schedule" %}
+        <span class="badge badge-info">⏱ schedule</span>
+      {% else %}
+        <span class="badge badge-neutral">manual</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Exit code / Duration</div>
+    <div style="margin-top:6px; font-weight:600; font-size:13px;" id="exit-info">
+      {% if run.exit_code is not None %}
+        Exit {{ run.exit_code }}
+        {% if run.duration_seconds %} &bull; {{ run.duration_seconds|floatformat:1 }}s{% endif %}
+      {% else %}
+        —
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Output</h3>
+    <span class="text-small text-muted">Started {{ run.started_at|date:"M j, Y H:i:s" }} UTC</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <pre class="output-log" id="output-log" style="border-radius:0 0 8px 8px; margin:0;">{% if run.output %}{{ run.output }}{% else %}Waiting for output…{% endif %}</pre>
+  </div>
+</div>
+
+{% if run.configuration %}
+<div class="card">
+  <div class="card-header"><h3>Configuration</h3></div>
+  <div class="card-body" style="padding:0;">
+    <pre class="output-log" style="border-radius:0 0 8px 8px; margin:0; max-height:160px;">Org ID:            {{ run.configuration.org_id }}
+Jira Project Key:  {{ run.configuration.jira_project_key }}
+Severity:          {{ run.configuration.severity }}
+Issue Type:        {{ run.configuration.issue_type }}
+Dry Run:           {{ run.configuration.dry_run }}</pre>
+  </div>
+</div>
+{% endif %}
+
+{% if run.status == "running" or run.status == "pending" %}
+<script>
+(function() {
+  var pollUrl = "{% url 'run_status_api' run.pk %}";
+  var intervalId = setInterval(function() {
+    fetch(pollUrl)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        // Update output
+        var log = document.getElementById("output-log");
+        if (data.output) log.textContent = data.output;
+
+        // Update status badge
+        var badgeEl = document.getElementById("status-badge");
+        if (data.status === "success") {
+          badgeEl.innerHTML = '<span class="badge badge-success">✓ success</span>';
+        } else if (data.status === "failed") {
+          badgeEl.innerHTML = '<span class="badge badge-danger">✗ failed</span>';
+        } else if (data.status === "running") {
+          badgeEl.innerHTML = '<span class="badge badge-running">● running…</span>';
+        }
+
+        // Update exit info once finished
+        if (data.finished_at) {
+          var exit = document.getElementById("exit-info");
+          exit.textContent = "Exit " + (data.exit_code !== null ? data.exit_code : "—");
+          clearInterval(intervalId);
+        }
+      })
+      .catch(function() { /* network hiccup, keep polling */ });
+  }, 2000);
+})();
+</script>
+{% endif %}
+
+{% endblock %}

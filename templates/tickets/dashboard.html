@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Snyk Jira Tickets{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'config_create' %}" class="btn btn-primary">+ New Configuration</a>
+{% endblock %}
+
+{% block content %}
+
+{% if not snyk_token_set %}
+<div class="alert alert-warning">
+  ⚠ <strong>SNYK_TOKEN is not set.</strong> Copy <code>.env.example</code> to <code>.env</code> and add your token before running.
+</div>
+{% endif %}
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="value">{{ configs.count }}</div>
+    <div class="label">Configurations</div>
+  </div>
+  <div class="stat-card">
+    <div class="value">{{ schedules.count }}</div>
+    <div class="label">Schedules</div>
+  </div>
+  <div class="stat-card">
+    <div class="value">{{ recent_runs|length }}</div>
+    <div class="label">Recent Runs</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Configurations</h3>
+    <a href="{% url 'config_list' %}" class="btn btn-secondary btn-sm">View all</a>
+  </div>
+  {% if configs %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Org ID</th>
+        <th>Jira Project</th>
+        <th>Severity</th>
+        <th>Dry Run</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in configs %}
+      <tr>
+        <td><strong>{{ c.name }}</strong>{% if c.description %}<br><span class="text-muted text-small">{{ c.description }}</span>{% endif %}</td>
+        <td class="text-small text-muted">{{ c.org_id|truncatechars:20 }}</td>
+        <td>{{ c.jira_project_key }}</td>
+        <td><span class="badge badge-neutral">{{ c.severity }}</span></td>
+        <td>{% if c.dry_run %}<span class="badge badge-warning">dry run</span>{% else %}—{% endif %}</td>
+        <td>
+          <div class="flex gap-8">
+            <form method="post" action="{% url 'run_now' c.pk %}" style="display:inline">
+              {% csrf_token %}
+              <button class="btn btn-success btn-sm" {% if not snyk_token_set %}disabled title="Set SNYK_TOKEN first"{% endif %}>▶ Run</button>
+            </form>
+            <a href="{% url 'config_edit' c.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">⚙</div>
+    <p>No configurations yet. <a href="{% url 'config_create' %}">Create one</a> to get started.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Recent Runs</h3>
+    <a href="{% url 'run_list' %}" class="btn btn-secondary btn-sm">View all</a>
+  </div>
+  {% if recent_runs %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Configuration</th>
+        <th>Triggered by</th>
+        <th>Status</th>
+        <th>Started</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in recent_runs %}
+      <tr>
+        <td class="text-muted text-small">{{ run.pk }}</td>
+        <td>{{ run.configuration.name|default:"—" }}</td>
+        <td>{{ run.triggered_by }}</td>
+        <td>
+          {% if run.status == "success" %}<span class="badge badge-success">✓ success</span>
+          {% elif run.status == "failed" %}<span class="badge badge-danger">✗ failed</span>
+          {% elif run.status == "running" %}<span class="badge badge-running">● running</span>
+          {% else %}<span class="badge badge-neutral">{{ run.status }}</span>{% endif %}
+        </td>
+        <td class="text-small text-muted">{{ run.started_at|date:"M j, H:i" }}</td>
+        <td><a href="{% url 'run_detail' run.pk %}" class="btn btn-secondary btn-sm">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">▶</div>
+    <p>No runs yet. Use the Run button on a configuration to start one.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

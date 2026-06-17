@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Run History — Snyk Jira Tickets{% endblock %}
+{% block page_title %}Run History{% endblock %}
+
+{% block content %}
+<div class="card mb-0">
+  {% if runs %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Configuration</th>
+        <th>Triggered by</th>
+        <th>Status</th>
+        <th>Exit code</th>
+        <th>Duration</th>
+        <th>Started</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td class="text-muted text-small">{{ run.pk }}</td>
+        <td>{{ run.configuration.name|default:"(deleted)" }}</td>
+        <td>
+          {% if run.triggered_by == "schedule" %}
+            <span class="badge badge-info">⏱ schedule</span>
+          {% else %}
+            <span class="badge badge-neutral">manual</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if run.status == "success" %}<span class="badge badge-success">✓ success</span>
+          {% elif run.status == "failed" %}<span class="badge badge-danger">✗ failed</span>
+          {% elif run.status == "running" %}<span class="badge badge-running">● running</span>
+          {% else %}<span class="badge badge-neutral">{{ run.status }}</span>{% endif %}
+        </td>
+        <td class="text-small text-muted">{{ run.exit_code|default:"—" }}</td>
+        <td class="text-small text-muted">
+          {% if run.duration_seconds %}{{ run.duration_seconds|floatformat:1 }}s{% else %}—{% endif %}
+        </td>
+        <td class="text-small text-muted">{{ run.started_at|date:"M j, Y H:i" }}</td>
+        <td><a href="{% url 'run_detail' run.pk %}" class="btn btn-secondary btn-sm">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">▶</div>
+    <p>No runs yet. Go to <a href="{% url 'dashboard' %}">Dashboard</a> and click Run on a configuration.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

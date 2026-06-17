@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Snyk Jira Tickets{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'config_list' %}" class="btn btn-secondary">← Back</a>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+
+  <div class="card">
+    <div class="card-header"><h3>General</h3></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Profile Name *</label>
+          {{ form.name }}
+          {{ form.name.errors }}
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          {{ form.description }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Snyk Settings</h3></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Snyk Org ID *</label>
+          {{ form.org_id }}
+          {{ form.org_id.errors }}
+          <span class="form-help">Found in Snyk → Settings → General → Organization ID</span>
+        </div>
+        <div class="form-group">
+          <label>Snyk Project ID</label>
+          {{ form.project_id }}
+          {{ form.project_id.errors }}
+          <span class="form-help">Leave blank to sync all projects in the org</span>
+        </div>
+        <div class="form-group full">
+          <label>API Endpoint</label>
+          {{ form.api_endpoint }}
+          {{ form.api_endpoint.errors }}
+          <span class="form-help">Only needed for Snyk private/self-hosted instances</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Jira Settings</h3></div>
+    <div class="card-body">
+      <div class="form-grid three">
+        <div class="form-group">
+          <label>Jira Project Key *</label>
+          {{ form.jira_project_key }}
+          {{ form.jira_project_key.errors }}
+          <span class="form-help">e.g. SEC, VULN</span>
+        </div>
+        <div class="form-group">
+          <label>Jira Project ID</label>
+          {{ form.jira_project_id }}
+          {{ form.jira_project_id.errors }}
+          <span class="form-help">Numeric ID (optional)</span>
+        </div>
+        <div class="form-group">
+          <label>Jira Ticket Type</label>
+          {{ form.jira_ticket_type }}
+          {{ form.jira_ticket_type.errors }}
+          <span class="form-help">e.g. Bug, Task, Story</span>
+        </div>
+        <div class="form-group">
+          <label>Assignee ID</label>
+          {{ form.assignee_id }}
+          {{ form.assignee_id.errors }}
+        </div>
+        <div class="form-group">
+          <label>Assignee Name</label>
+          {{ form.assignee_name }}
+          {{ form.assignee_name.errors }}
+        </div>
+        <div class="form-group">
+          <label>Labels</label>
+          {{ form.labels }}
+          {{ form.labels.errors }}
+          <span class="form-help">Comma-separated, e.g. snyk,security</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Filters</h3></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Minimum Severity</label>
+          {{ form.severity }}
+          {{ form.severity.errors }}
+          <span class="form-help">Only create tickets for issues at or above this severity</span>
+        </div>
+        <div class="form-group">
+          <label>Issue Type</label>
+          {{ form.issue_type }}
+          {{ form.issue_type.errors }}
+        </div>
+        <div class="form-group">
+          <label>Maturity Filter</label>
+          {{ form.maturity_filter }}
+          {{ form.maturity_filter.errors }}
+          <span class="form-help">Comma-separated exploit maturity levels to include</span>
+        </div>
+        <div class="form-group">
+          <label>Priority Score Threshold</label>
+          {{ form.priority_score_threshold }}
+          {{ form.priority_score_threshold.errors }}
+          <span class="form-help">0–1000. Only create tickets at or above this score</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Options</h3></div>
+    <div class="card-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <label class="form-check">
+          {{ form.priority_is_severity }}
+          <span>Priority = Severity (<code>--priorityIsSeverity</code>)</span>
+        </label>
+        <label class="form-check">
+          {{ form.if_upgrade_available_only }}
+          <span>Upgradable issues only (<code>--ifUpgradeAvailableOnly</code>)</span>
+        </label>
+        <label class="form-check">
+          {{ form.dry_run }}
+          <span>Dry run — preview without creating tickets (<code>--dryRun</code>)</span>
+        </label>
+        <label class="form-check">
+          {{ form.debug }}
+          <span>Debug logging (<code>--debug</code>)</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:10px;">
+    <button type="submit" class="btn btn-primary">Save Configuration</button>
+    <a href="{% url 'config_list' %}" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

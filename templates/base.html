@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Snyk Jira Tickets{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --snyk-purple: #4c4a9c;
+      --snyk-purple-dark: #2d2b6b;
+      --snyk-green: #00c39a;
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --border: #e2e4ea;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #059669;
+      --info: #2563eb;
+      --sidebar-w: 220px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--snyk-purple-dark);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-brand {
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-brand .logo-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-brand .snyk-dot {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--snyk-green);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 16px; color: #fff;
+    }
+    .sidebar-brand h1 {
+      font-size: 14px; font-weight: 700; line-height: 1.2;
+    }
+    .sidebar-brand p {
+      font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px;
+    }
+
+    .sidebar nav { padding: 12px 0; flex: 1; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px;
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    .sidebar nav a:hover,
+    .sidebar nav a.active {
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+      border-left-color: var(--snyk-green);
+    }
+    .sidebar nav .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ── Main content ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar h2 { font-size: 18px; font-weight: 600; }
+    .topbar .actions { display: flex; gap: 8px; }
+
+    .content { padding: 24px 28px; flex: 1; }
+
+    /* ── Alerts ── */
+    .alerts { margin-bottom: 20px; }
+    .alert {
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .alert-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header h3 { font-size: 14px; font-weight: 600; }
+    .card-body { padding: 18px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary   { background: var(--snyk-purple); color: #fff; }
+    .btn-success   { background: var(--snyk-green); color: #fff; }
+    .btn-danger    { background: var(--danger); color: #fff; }
+    .btn-warning   { background: var(--warning); color: #fff; }
+    .btn-secondary { background: #e5e7eb; color: var(--text); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn-icon { padding: 5px 8px; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); background: var(--bg); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbff; }
+
+    /* ── Forms ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 12px; font-weight: 600; color: var(--muted); }
+    input[type=text], input[type=number], select, textarea {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+      background: var(--surface);
+      color: var(--text);
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--snyk-purple); }
+    .form-help { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .errorlist { list-style: none; color: var(--danger); font-size: 12px; margin-top: 2px; }
+    .form-check { display: flex; align-items: center; gap: 8px; }
+    .form-check input[type=checkbox] { width: auto; }
+    .form-check label { font-size: 13px; color: var(--text); margin: 0; font-weight: 400; }
+    .form-section { margin-bottom: 24px; }
+    .form-section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--snyk-purple);
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--snyk-purple);
+      display: inline-block;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px; font-weight: 600;
+      text-transform: capitalize;
+    }
+    .badge-success  { background: #dcfce7; color: #166534; }
+    .badge-danger   { background: #fee2e2; color: #991b1b; }
+    .badge-warning  { background: #fef3c7; color: #92400e; }
+    .badge-info     { background: #dbeafe; color: #1e40af; }
+    .badge-neutral  { background: #f3f4f6; color: var(--muted); }
+    .badge-running  { background: #ede9fe; color: #5b21b6; }
+
+    /* ── Misc ── */
+    .empty-state {
+      text-align: center; padding: 48px 24px; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; }
+
+    pre.output-log {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+
+    .text-danger { color: var(--danger); }
+    .text-muted  { color: var(--muted); }
+    .text-small  { font-size: 12px; }
+    .mb-0 { margin-bottom: 0; }
+    .gap-8 { gap: 8px; }
+    .flex { display: flex; align-items: center; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-row">
+      <div class="snyk-dot">S</div>
+      <div>
+        <h1>Snyk Jira</h1>
+        <p>Vuln Ticket Interface</p>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <span class="nav-icon">⊞</span> Dashboard
+    </a>
+    <a href="{% url 'config_list' %}" class="{% if 'config' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">⚙</span> Configurations
+    </a>
+    <a href="{% url 'schedule_list' %}" class="{% if 'schedule' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">⏱</span> Schedules
+    </a>
+    <a href="{% url 'run_list' %}" class="{% if 'run' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">▶</span> Run History
+    </a>
+  </nav>
+  <div class="sidebar-footer">snyk-jira-tickets-for-new-vulns</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+    <div class="actions">{% block topbar_actions %}{% endblock %}</div>
+  </div>
+  <div class="content">
+    {% if messages %}
+    <div class="alerts">
+      {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags|default:'info' }}">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+</body>
+</html>

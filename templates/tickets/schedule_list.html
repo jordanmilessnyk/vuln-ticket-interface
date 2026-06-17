@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Schedules — Snyk Jira Tickets{% endblock %}
+{% block page_title %}Schedules{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'schedule_create' %}" class="btn btn-primary">+ New Schedule</a>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-0">
+  {% if schedules %}
+  <table>
+    <thead>
+      <tr>
+        <th>Configuration</th>
+        <th>Cron Expression</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in schedules %}
+      <tr>
+        <td><strong>{{ s.configuration.name }}</strong></td>
+        <td><code>{{ s.cron_expression }}</code></td>
+        <td class="text-muted text-small">{{ s.configuration.description|default:"—" }}</td>
+        <td>
+          {% if s.enabled %}
+            <span class="badge badge-success">● enabled</span>
+          {% else %}
+            <span class="badge badge-neutral">○ disabled</span>
+          {% endif %}
+        </td>
+        <td class="text-small text-muted">{{ s.created_at|date:"M j, Y" }}</td>
+        <td>
+          <div class="flex gap-8">
+            <form method="post" action="{% url 'schedule_toggle' s.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-secondary btn-sm">
+                {% if s.enabled %}Disable{% else %}Enable{% endif %}
+              </button>
+            </form>
+            <a href="{% url 'schedule_edit' s.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{% url 'schedule_delete' s.pk %}" onsubmit="return confirm('Delete this schedule?')">
+              {% csrf_token %}
+              <button class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">⏱</div>
+    <p>No schedules yet. <a href="{% url 'schedule_create' %}">Create one</a> to automate runs.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header"><h3>Cron expression reference</h3></div>
+  <div class="card-body">
+    <table style="width:auto;">
+      <thead><tr><th>Expression</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>0 9 * * 1</code></td><td>Every Monday at 09:00 UTC</td></tr>
+        <tr><td><code>0 8 * * 1-5</code></td><td>Weekdays at 08:00 UTC</td></tr>
+        <tr><td><code>0 */6 * * *</code></td><td>Every 6 hours</td></tr>
+        <tr><td><code>0 0 * * *</code></td><td>Daily at midnight UTC</td></tr>
+        <tr><td><code>0 0 1 * *</code></td><td>First day of each month</td></tr>
+      </tbody>
+    </table>
+    <p class="form-help" style="margin-top:10px;">Format: <code>minute hour day-of-month month day-of-week</code> — all times UTC.</p>
+  </div>
+</div>
+{% endblock %}
